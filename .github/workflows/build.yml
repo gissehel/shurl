@@ -55,32 +55,11 @@ jobs:
                   username: ${{ vars.CR_USER }}
                   password: ${{ secrets.CR_PAT }}
 
-            - name: "Build and push client"
-              uses: "docker/build-push-action@v4"
-              with:
-                  context: "."
-                  push: true
-                  no-cache: true
-                  build-args: |
-                      SOURCE=git
-                      APPTYPE=client
-                      POINT=${{ env.GITHUB_SHA_SHORT }}
-                      VCS_REF=${{ env.GITHUB_SHA_SHORT }}
-                      BUILD_DATE=${{ env.BUILD_DATE }}
-                      VERSION=${{ env.VERSION_LABEL }}
-                  tags: "${{ env.DOCKER_TAGS_CLIENT }}"
-
-            - name: "Build and push admin"
-              uses: "docker/build-push-action@v4"
-              with:
-                  context: "."
-                  push: true
-                  no-cache: true
-                  build-args: |
-                      SOURCE=git
-                      APPTYPE=admin
-                      POINT=${{ env.GITHUB_SHA_SHORT }}
-                      VCS_REF=${{ env.GITHUB_SHA_SHORT }}
-                      BUILD_DATE=${{ env.BUILD_DATE }}
-                      VERSION=${{ env.VERSION_LABEL }}
-                  tags: "${{ env.DOCKER_TAGS_ADMIN }}"
+            - name: "Build and push"
+              run:
+                docker build . -t shurl-baseos --target shurl-baseos
+                docker build . -t shurl-baseimage --target shurl-baseimage
+                docker build . -t "${{ env.DOCKER_TAGS_ADMIN }}" --build-arg APPTYPE=admin --build-arg POINT=${{ env.GITHUB_SHA_SHORT }} --build-arg VCS_REF=${{ env.GITHUB_SHA_SHORT }} --build-arg BUILD_DATE=${{ env.BUILD_DATE }} --build-arg VERSION=${{ env.VERSION_LABEL }}
+                docker build . -t "${{ env.DOCKER_TAGS_CLIENT }}" --build-arg APPTYPE=client --build-arg POINT=${{ env.GITHUB_SHA_SHORT }} --build-arg VCS_REF=${{ env.GITHUB_SHA_SHORT }} --build-arg BUILD_DATE=${{ env.BUILD_DATE }} --build-arg VERSION=${{ env.VERSION_LABEL }}
+                docker push "${{ env.DOCKER_TAGS_ADMIN }}"
+                docker push "${{ env.DOCKER_TAGS_CLIENT }}"
