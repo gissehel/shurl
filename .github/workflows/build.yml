@@ -36,12 +36,14 @@ jobs:
             - name: "Set environment variables if tag"
               if: "contains(github.ref, 'refs/tags')"
               run: |
-                  echo "DOCKER_TAGS=${{ env.IMAGE_NAME }}:${{ env.REFNAME }},${{ env.IMAGE_NAME }}:latest" >> "${GITHUB_ENV}"
+                  echo "DOCKER_TAGS_CLIENT=${{ env.IMAGE_NAME }}-client:${{ env.REFNAME }},${{ env.IMAGE_NAME }}-client:latest" >> "${GITHUB_ENV}"
+                  echo "DOCKER_TAGS_ADMIN=${{ env.IMAGE_NAME }}-admin:${{ env.REFNAME }},${{ env.IMAGE_NAME }}-admin:latest" >> "${GITHUB_ENV}"
 
             - name: "Set environment variables if simple commit"
               if: "!contains(github.ref, 'refs/tags')"
               run: |
-                  echo "DOCKER_TAGS=${{ env.IMAGE_NAME }}:${{env.GITHUB_SHA_SHORT}},${{ env.IMAGE_NAME }}:${{ env.VERSION }}-git,${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ env.GITHUB_SHA_SHORT }},${{ env.IMAGE_NAME }}:${{ env.REFNAME }}-${{ env.GITHUB_SHA_SHORT }},${{ env.IMAGE_NAME }}:${{ env.REFNAME }}" >> "${GITHUB_ENV}"
+                  echo "DOCKER_TAGS_CLIENT=${{ env.IMAGE_NAME }}-client:${{ env.GITHUB_SHA_SHORT}},${{ env.IMAGE_NAME }}-client:${{ env.VERSION }}-git,${{ env.IMAGE_NAME }}-client:${{ env.VERSION }}-${{ env.GITHUB_SHA_SHORT }},${{ env.IMAGE_NAME }}-client:${{ env.REFNAME }}-${{ env.GITHUB_SHA_SHORT }},${{ env.IMAGE_NAME }}-client:${{ env.REFNAME }}" >> "${GITHUB_ENV}"
+                  echo "DOCKER_TAGS_ADMIN=${{ env.IMAGE_NAME }}-admin:${{ env.GITHUB_SHA_SHORT}},${{ env.IMAGE_NAME }}-admin:${{ env.VERSION }}-git,${{ env.IMAGE_NAME }}-admin:${{ env.VERSION }}-${{ env.GITHUB_SHA_SHORT }},${{ env.IMAGE_NAME }}-admin:${{ env.REFNAME }}-${{ env.GITHUB_SHA_SHORT }},${{ env.IMAGE_NAME }}-admin:${{ env.REFNAME }}" >> "${GITHUB_ENV}"
 
             - name: "Set up Docker Buildx"
               uses: "docker/setup-buildx-action@v2"
@@ -62,12 +64,11 @@ jobs:
                   build-args: |
                       SOURCE=git
                       APPTYPE=client
-                      IMAGE_NAME=${{ env.IMAGE_NAME }}-client
                       POINT=${{ env.GITHUB_SHA_SHORT }}
                       VCS_REF=${{ env.GITHUB_SHA_SHORT }}
                       BUILD_DATE=${{ env.BUILD_DATE }}
                       VERSION=${{ env.VERSION_LABEL }}
-                  tags: "${{ env.DOCKER_TAGS }}"
+                  tags: "${{ env.DOCKER_TAGS_CLIENT }}"
 
             - name: "Build and push admin"
               uses: "docker/build-push-action@v4"
@@ -78,9 +79,8 @@ jobs:
                   build-args: |
                       SOURCE=git
                       APPTYPE=admin
-                      IMAGE_NAME=${{ env.IMAGE_NAME }}-admin
                       POINT=${{ env.GITHUB_SHA_SHORT }}
                       VCS_REF=${{ env.GITHUB_SHA_SHORT }}
                       BUILD_DATE=${{ env.BUILD_DATE }}
                       VERSION=${{ env.VERSION_LABEL }}
-                  tags: "${{ env.DOCKER_TAGS }}"
+                  tags: "${{ env.DOCKER_TAGS_ADMIN }}"
