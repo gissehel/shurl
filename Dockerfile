@@ -53,11 +53,11 @@ LABEL \
       org.opencontainers.image.revision="${VCS_REF}" \
       org.opencontainers.image.vendor="gissehel" \
       org.opencontainers.image.ref.name="ghcr.io/gissehel/shurl-${APPTYPE}" \
-      org.opencontainers.image.title="shurl" \
+      org.opencontainers.image.title="shurl-${APPTYPE}" \
       org.opencontainers.image.description="Image for shurl-${APPTYPE}" \
       org.label-schema.build-date="${BUILD_DATE}" \
       org.label-schema.vcs-ref="${VCS_REF}" \
-      org.label-schema.name="shurl" \
+      org.label-schema.name="shurl-${APPTYPE}" \
       org.label-schema.version="${VERSION}" \
       org.label-schema.vendor="gissehel" \
       org.label-schema.vcs-url="https://github.com/gissehel/shurl" \
