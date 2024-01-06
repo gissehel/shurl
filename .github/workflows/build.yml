@@ -56,7 +56,7 @@ jobs:
                   password: ${{ secrets.CR_PAT }}
 
             - name: "Build and push"
-              run:
+              run: |
                 docker build . -t shurl-baseos --target shurl-baseos
                 docker build . -t shurl-baseimage --target shurl-baseimage
                 docker build . -t "${{ env.DOCKER_TAGS_ADMIN }}" --build-arg APPTYPE=admin --build-arg POINT=${{ env.GITHUB_SHA_SHORT }} --build-arg VCS_REF=${{ env.GITHUB_SHA_SHORT }} --build-arg BUILD_DATE=${{ env.BUILD_DATE }} --build-arg VERSION=${{ env.VERSION_LABEL }}
