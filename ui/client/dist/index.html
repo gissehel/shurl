@@ -1,0 +1,42 @@
+<html>
+
+<body></body>
+<script>
+    const get_name = () => {
+        const path_parts = document.location.pathname.split('/')
+        const name = path_parts[path_parts.length - 1]
+        console.log(`Name: ${name}`)
+        return name
+    }
+    const ensure_name = (name) => {
+        const allowed = 'abcdefghijklmnopqrstuvwxyz0123456789-_'
+        for (let i = 0; i < name.length; i++) {
+            if (allowed.indexOf(name[i]) === -1) {
+                throw new Error('Invalid name')
+            }
+        }
+        return true
+    }
+    const main = async () => {
+        const name = get_name()
+        try {
+            if (ensure_name(name)) {
+                const result = await fetch(`/_/get-url/${name}`)
+                if (result.ok) {
+                    const data = await result.json()
+                    if (data.url) {
+                        document.location.href = data.url
+                        return
+                    }
+                }
+                document.body.innerHTML = `<p>Unknown site ${name}</p>`
+            }
+        } catch (e) {
+            document.body.innerHTML = `<p>Problem accessing the site</p>`
+            console.log({ e })
+        }
+    }
+    main()
+</script>
+
+</html>

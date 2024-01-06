@@ -1,0 +1,361 @@
+<html>
+
+<head>
+    <title>Admin</title>
+</head>
+
+<body>
+</body>
+<script>
+    const create_element = async (params) => {
+        const element = document.createElement(params.tag)
+        if (params.id) {
+            element.id = params.id
+        }
+        if (params.classes) {
+            params.classes.forEach((c) => {
+                element.classList.add(c)
+            })
+        }
+        if (params.text) {
+            element.innerText = params.text
+        }
+        if (params.html) {
+            element.innerHTML = params.html
+        }
+        if (params.parent) {
+            params.parent.appendChild(element)
+        }
+        const add_child = async (child) => {
+            if (Array.isArray(child)) {
+                for (let c of await Promise.all(child)) {
+                    await add_child(c)
+                }
+            } else {
+                element.appendChild(await child)
+            }
+        }
+        if (params.children) {
+            for (let child of params.children) {
+                await add_child(child)
+            }
+        }
+        if (params.attributes) {
+            for (let attribute_name of Object.keys(params.attributes)) {
+                element.setAttribute(attribute_name, params.attributes[attribute_name])
+            }
+        }
+        if (params.on_created) {
+            await params.on_created(element)
+        }
+        return element
+    }
+    const add_style = (() => {
+        let current_text = null
+        let style = null
+
+        return (text) => {
+            if (current_text === null) {
+                style = document.createElement('style')
+                document.head.appendChild(style)
+                current_text = ''
+            } else {
+                current_text += '\n'
+            }
+            current_text += text
+            style.textContent = current_text
+        }
+    })()
+    const get_data = async (url) => {
+        const result = await fetch(url)
+        if (result.ok) {
+            const data = await result.json()
+            return data
+        }
+        return null
+    }
+    const change_data = async (url, data) => {
+        const result = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data),
+        })
+        if (result.ok) {
+            const data = await result.json()
+            return data
+        }
+        return null
+    }
+    const get_url = async (name) => {
+        const data = await get_data(`/_/admin-get-url/${name}`)
+        if (data && data.url) {
+            return data.url
+        }
+        return null
+    }
+    const get_all_urls = async () => {
+        const data = await get_data(`/_/get-all-urls`)
+        if (data && data.urls) {
+            return data.urls
+        }
+        return []
+    }
+    const update_name = async (old_name, new_name) => {
+        const data = await change_data(`/_/update-name`, {
+            old_name,
+            new_name,
+        })
+        if (data && data.ok) {
+            return true
+        }
+        return false
+    }
+    const update_url = async (name, url) => {
+        const data = await change_data(`/_/update-url`, {
+            name,
+            url,
+        })
+        if (data && data.ok) {
+            return true
+        }
+        return false
+    }
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+    const add_url = async (name, url) => {
+        await delay(500)
+        const data = await change_data(`/_/add-url`, {
+            name,
+            url,
+        })
+        if (data) {
+            return true
+        }
+        return false
+    }
+
+    const create_editable_cell = async (text, on_change, extra_class) => {
+        let cell =  null
+        return await create_element({
+            tag: 'td',
+            classes: ['editable-cell', extra_class],
+            on_created: async (element) => {
+                cell = element
+            },
+            children: [
+                await create_element({
+                    tag: 'div',
+                    text,
+                    on_created: async (element) => {
+                        element.addEventListener('click', async () => {
+                            element.style.display = 'none'
+                            let form = null
+                            let input = null
+                            await create_element({
+                                tag: 'form',
+                                classes: ['edit-form-name', 'edit-form'],
+                                parent: cell,
+                                on_created: async (element_form) => {
+                                    form = element_form
+                                },
+                                children: [
+                                    await create_element({
+                                        tag: 'input',
+                                        attributes: {
+                                            type: 'text',
+                                            value: text,
+                                        },
+                                        on_created: async (element_input) => {
+                                            input = element_input
+                                            element_input.addEventListener('input', () => {
+                                                console.log('edit_input_name', element_input.value)
+                                            })
+                                        },
+                                    }),
+                                    await create_element({
+                                        tag: 'input',
+                                        attributes: {
+                                            type: 'submit',
+                                            value: 'Update',
+                                        },
+                                        on_created: async (submit_element) => {
+                                            submit_element.addEventListener('click', async (event) => {
+                                                event.preventDefault()
+                                                const new_text = input.value
+                                                if (new_text && new_text !== text) {
+                                                    console.log({ new_text })
+                                                    if (await on_change(new_text)) {
+                                                        text = new_text
+                                                        element.innerText = text
+                                                    }
+                                                }
+                                                if (form !== null) {
+                                                    form.remove()
+                                                }
+                                                element.style.display = 'block'
+                                            })
+                                        },
+                                    }),
+                                ],
+                            })
+                        })
+                    },
+                }),
+            ],
+        })
+    }
+
+    const create_line = async (table, lines, { name, url, hits }) => {
+        let name_cell = null
+        let url_cell = null
+        return await create_element({
+            tag: 'tr',
+            on_created: async (element) => {
+                lines.push(element)
+            },
+            parent: table,
+            children: [
+                await create_editable_cell(name, async (new_name) => {
+                    if (await update_name(name, new_name)) {
+                        name = new_name
+                        return true
+                    }
+                    return false
+                }, 'name-cell'),
+                await create_editable_cell(url, async (new_url) => {
+                    if (await update_url(name, new_url)) {
+                        url = new_url
+                        return true
+                    }
+                    return false
+                }, 'url-cell'),
+                await create_element({
+                    tag: 'td',
+                    text: hits,
+                }),
+            ],
+        })
+    }
+    const main = async () => {
+        add_style('table{ margin: 15px; }')
+        add_style('td{ padding: 3px; }')
+        add_style('html, td, th, input{ font-family: Calibri;}')
+        add_style('.edit-form{ margin-bottom: 0px; }')
+        add_style('.edit-form, .editable-cell{ height: 1.5em; }')
+        add_style('.name-header{ width: 16em; }')
+        add_style('.url-header{ width: 60em; }')
+        add_style('.name-cell input:first-child { width: 10em; }')
+        add_style('.url-cell input:first-child { width: 50em; }')
+        try {
+            let table = null
+            let lines = []
+            let input_name = null
+            let input_url = null
+            let urls = await get_all_urls()
+            await create_element({
+                tag: 'table',
+                parent: document.body,
+                on_created: async (element) => {
+                    table = element
+                },
+                children: [
+                    await create_element({
+                        tag: 'tr',
+                        children: [
+                            await create_element({
+                                tag: 'th',
+                                text: 'Name',
+                                classes: ['name-header'],
+                            }),
+                            await create_element({
+                                tag: 'th',
+                                text: 'URL',
+                                classes: ['url-header'],
+                            }),
+                            await create_element({
+                                tag: 'th',
+                                text: 'Hits',
+                                classes: ['hits-header'],
+                            }),
+                        ],
+                    }),
+                ],
+            })
+            for (let { name, url, hits } of urls) {
+                await create_line(table, lines, { name, url, hits })
+            }
+            await create_element({
+                tag: 'form',
+                parent: document.body,
+                children: [
+                    await create_element({
+                        tag: 'input',
+                        parent: document.body,
+                        attributes: {
+                            type: 'text',
+                            placeholder: 'Name',
+                        },
+                        on_created: async (element) => {
+                            input_name = element
+                            element.addEventListener('input', () => {
+                                console.log('input_name', input_name.value)
+                            })
+                        },
+                    }),
+                    await create_element({
+                        tag: 'input',
+                        parent: document.body,
+                        attributes: {
+                            type: 'text',
+                            placeholder: 'URL',
+                        },
+                        on_created: async (element) => {
+                            input_url = element
+                            element.addEventListener('input', () => {
+                                console.log('input_url', input_url.value)
+                            })
+                        },
+                    }),
+                    await create_element({
+                        tag: 'input',
+                        attributes: {
+                            type: 'submit',
+                            value: 'Update',
+                        },
+                        on_created: async (element) => {
+                            element.addEventListener('click', async (event) => {
+                                event.preventDefault()
+                                const name = input_name.value
+                                const url = input_url.value
+                                if (name && url) {
+                                    console.log({ name, url })
+                                    input_name.value = ''
+                                    input_url.value = ''
+                                    if (await add_url(name, url)) {
+                                        create_line(table, lines, { name, url, hits: 0 })
+                                    } else {
+                                        if (input_name.value === '' && input_url.value === '') {
+                                            input_name.value = name
+                                            input_url.value = url
+                                        }
+                                    }
+                                    // const ok = await update_url(name, url)
+                                    // if (ok) {
+                                    //     document.location.reload()
+                                    // }
+                                }
+                            })
+                        },
+                    }),
+                ],
+            })
+            window.x = { table, lines, input_name, input_url }
+        } catch (e) {
+            console.log({ e })
+        }
+    }
+    main()
+</script>
+
+</html>
