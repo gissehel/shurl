@@ -62,6 +62,7 @@ jobs:
                   build-args: |
                       SOURCE=git
                       APPTYPE=client
+                      IMAGE_NAME=${{ env.IMAGE_NAME }}-client
                       POINT=${{ env.GITHUB_SHA_SHORT }}
                       VCS_REF=${{ env.GITHUB_SHA_SHORT }}
                       BUILD_DATE=${{ env.BUILD_DATE }}
@@ -77,6 +78,7 @@ jobs:
                   build-args: |
                       SOURCE=git
                       APPTYPE=admin
+                      IMAGE_NAME=${{ env.IMAGE_NAME }}-admin
                       POINT=${{ env.GITHUB_SHA_SHORT }}
                       VCS_REF=${{ env.GITHUB_SHA_SHORT }}
                       BUILD_DATE=${{ env.BUILD_DATE }}
