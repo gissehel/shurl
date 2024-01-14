@@ -1,0 +1,17 @@
+---
+to: src/lib/redux/slices/<%= name %>/thunks.js
+---
+import { createAsyncThunk } from '@reduxjs/toolkit'
+import { selectExample } from './selectors'
+import { slice } from './slice'
+
+export const exampleAsync = createAsyncThunk('<%= name %>/exampleAsync', async (amount) => {
+    return response.data
+})
+
+export const exampleIfOddAsync = (amount) => (dispatch, getState) => {
+    const example = selectExample(getState())
+    if (example % 2 === 1) {
+        dispatch(slice.actions.exampleReducer(amount))
+    }
+}

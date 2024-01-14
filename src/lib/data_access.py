@@ -31,3 +31,6 @@ def update_name_in_db(old_name, new_name):
 
 def update_url_in_db(name, url):
     execute('UPDATE urls SET url=? WHERE name=?', (url, name))
+    
+def delete_url_from_db(name):
+    execute('DELETE FROM urls WHERE name=?', (name,))

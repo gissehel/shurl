@@ -1,0 +1,25 @@
+---
+to: src/lib/redux/slices/<%= name %>/slice.js
+---
+import { createSlice } from '@reduxjs/toolkit'
+
+import { exampleAsync } from './thunks'
+
+const initialState = {
+    example: 0,
+    status: 'idle',
+}
+
+export const slice = createSlice({
+    name: '<%= name %>',
+    initialState,
+    reducers: {
+        exampleReducer: (state, action) => { state.example += action.payload },
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(exampleAsync.pending, (state) => { state.status = 'loading' })
+            .addCase(exampleAsync.fulfilled, (state, action) => { state.status = 'idle' })
+            .addCase(exampleAsync.rejected, (state, action) => { state.status = 'failed' })
+    },
+})

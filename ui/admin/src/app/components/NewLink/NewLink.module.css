@@ -1,0 +1,23 @@
+.NewLink {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    align-content: space-around;
+    justify-content: center;
+    gap: 10px;
+    height: 100%;
+    width: 100%;
+}
+
+.NewLinkName {
+    flex-grow: 1;
+}
+
+.NewLinkUrl {
+    flex-grow: 3;
+}
+
+.NewLinkAdd {
+    flex-grow: 1;
+}

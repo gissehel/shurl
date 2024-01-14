@@ -1,0 +1,19 @@
+---
+to: src/app/components/<%= name %>/<%= name %>Container.js
+---
+'use client'
+
+import { x, useSelector, useDispatch } from '@/lib/redux'
+import Component from './<%= name %>Component'
+
+const Container = ({ ...params }) => {
+    const dispatch = useDispatch()
+    const example = useSelector(x.selectExample)
+
+    return <Component
+        example={example}
+        { ...params }
+    />
+}
+
+export default Container

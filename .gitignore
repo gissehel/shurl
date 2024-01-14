@@ -2,3 +2,15 @@
 __pycache__
 database.db
 /run
+
+/ui/admin/node_modules
+/ui/admin/node_modules
+/ui/admin/.yarn/install-state.gz
+/ui/admin/.next/
+/ui/admin/out/
+/ui/admin/dist/
+/ui/admin/npm-debug.log*
+/ui/admin/yarn-debug.log*
+/ui/admin/yarn-error.log*
+/ui/admin/.vercel
+

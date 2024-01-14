@@ -1,6 +1,8 @@
 docker := "docker"
 extra := if docker == "docker" { "-e PUID=$(id -u) -e PGID=$(id -g)" } else { "" }
 
+all: clean build run
+
 default:
     echo "Hello, Justfile!"
     echo "[{{extra}}]"
@@ -12,6 +14,9 @@ build-client:
     {{docker}} build . -t shurl-client --build-arg APPTYPE=client
 
 build: build-admin build-client
+
+build-admin-ui:
+    cd ui/admin && yarn && yarn build
 
 client:
     mkdir -p run/log-client
@@ -44,7 +49,10 @@ clean-cont:
 clean-img:
     {{docker}} rmi -f shurl-client shurl-admin shurl-baseos shurl-baseimage || true
 
-clean-all: clean-cont clean-img
+clean-ui:
+    rm -rf ui/admin/node_modules ui/admin/dist ui/admin/.next
+
+clean-all: clean-cont clean-img clean-ui
     {{docker}} container prune -f
     {{docker}} image prune -f
     {{docker}} volume prune -f

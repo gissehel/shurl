@@ -37,6 +37,13 @@ EXPOSE 8000
 
 CMD ["/container/start.sh"]
 
+FROM node:20-bullseye as ui-builder
+ARG APPTYPE
+
+COPY ./ui/${APPTYPE} /app/${APPTYPE}
+RUN cd /app/${APPTYPE} && \
+    ([ -f /app/${APPTYPE}/package.json ] && yarn && yarn build) || echo "No package.json found"
+
 FROM shurl-baseimage
 ARG APPTYPE
 
@@ -64,6 +71,6 @@ LABEL \
       org.label-schema.schema-version="1.0" \
       maintainer="Gissehel <public-maintainer-docker-shurl@gissehel.org>"
 
-COPY ./ui/${APPTYPE}/dist /static
+COPY --from=ui-builder /app/${APPTYPE}/dist /static
 
 ENV APPTYPE=${APPTYPE}
