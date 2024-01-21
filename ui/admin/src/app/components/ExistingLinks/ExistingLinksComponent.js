@@ -67,7 +67,8 @@ const Component = ({
                 <TableHeader>
                     <TableRow>
                         <TableHeaderCell width={4}>Name</TableHeaderCell>
-                        <TableHeaderCell width={10}>Url</TableHeaderCell>
+                        <TableHeaderCell width={8}>Url</TableHeaderCell>
+                        <TableHeaderCell width={2}>Hits</TableHeaderCell>
                         <TableHeaderCell width={2}>Actions</TableHeaderCell>
                     </TableRow>
                 </TableHeader>
@@ -77,6 +78,9 @@ const Component = ({
                             return <TableRow key={index}>
                                 <DataCell link={link} onClick={onClickName} currentPage={currentPage} index={index} isEditable={link.nameEditable} value={link.name} editData={editData} onEditChanged={onEditChanged} onEditValidated={() => onUpdateName(link.name, editData)} />
                                 <DataCell link={link} onClick={onClickUrl} currentPage={currentPage} index={index} isEditable={link.urlEditable} value={link.url} editData={editData} onEditChanged={onEditChanged} onEditValidated={() => onUpdateUrl(link.name, editData)} />
+                                <TableCell className={style.ExistingLinksCell}>
+                                    {link.hits}
+                                </TableCell>                              
                                 <TableCell className={style.ExistingLinksCell}>
                                     <a href={link.url} target='_blank'><Button icon='external alternate' color='blue'></Button></a>
                                     <Button color='red' icon='trash' onClick={() => onRemoveLink(link.name)}></Button>
