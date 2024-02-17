@@ -31,8 +31,10 @@ const getLinksView = (state) => {
 
     const { pageSize } = state
     state.pageCount = Math.ceil(linksFiltered.length / pageSize)
-    if (state.currentPage >= state.pageCount) {
+    if (state.currentPage >= state.pageCount && state.pageCount > 0) {
         state.currentPage = state.pageCount - 1
+    } else if (state.currentPage < 0) {
+        state.currentPage = 0
     }
     const { currentPage } = state
     const start = currentPage * pageSize
