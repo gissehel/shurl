@@ -28,6 +28,6 @@ export const removeLinkAsync = createAsyncThunk('links/removeLinkAsync', async (
 })
 
 export const changeSearch = createAsyncThunk('links/changeSearch', async ({ search }) => {
-    await delay(1000)
+    await delay(250)
     return { search }
 })

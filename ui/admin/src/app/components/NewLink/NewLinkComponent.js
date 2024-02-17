@@ -43,6 +43,7 @@ const Component = ({ name, url, asTableRow, onNameChanged, onUrlChanged, onValid
                     <input type='submit' hidden />
                     </form>
                 </TableCell>
+                <TableCell></TableCell>
                 <TableCell>
                     <Button primary icon='plus' onClick={onSubmit} />
                 </TableCell>

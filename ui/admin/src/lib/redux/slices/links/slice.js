@@ -24,19 +24,24 @@ const initialState = {
 
 const getLinksView = (state) => {
     const { links, editLine, editType } = state
-    const { currentPage, pageSize } = state
-    const start = currentPage * pageSize
     let linksFiltered = links
     for (const filter of state.searchValue.toLowerCase().split(' ').filter((value) => value !== '')) {
-        linksFiltered = linksFiltered.filter((link) => link.name.toLowerCase().includes(filter) || link.url.toLowerCase().includes(filter))
+        linksFiltered = linksFiltered.map((item, index) => ({ ...item, index })).filter((link) => link.name.toLowerCase().includes(filter) || link.url.toLowerCase().includes(filter))
     }
+
+    const { pageSize } = state
+    state.pageCount = Math.ceil(linksFiltered.length / pageSize)
+    if (state.currentPage >= state.pageCount) {
+        state.currentPage = state.pageCount - 1
+    }
+    const { currentPage } = state
+    const start = currentPage * pageSize
     const linksView = linksFiltered.slice(start, start + pageSize).map((link, index) => {
         if (index + start === editLine) {
             return { ...link, ...(editType === 'name' ? { nameEditable: true } : { urlEditable: true }) }
         }
         return link
     })
-    state.pageCount = Math.ceil(linksFiltered.length / pageSize)
     state.linksFiltered = linksFiltered
     state.linksView = linksView
 }
@@ -46,7 +51,7 @@ const editItem = (state, action, itemType) => {
     const { pageSize } = state
     state.editLine = currentPage * pageSize + line
     state.editType = itemType
-    state.editData = state.links[state.editLine][itemType]
+    state.editData = state.linksFiltered[state.editLine][itemType]
     getLinksView(state)
 }
 
@@ -104,9 +109,9 @@ export const slice = createSlice({
             })
             .addCase(updateNameAsync.fulfilled, (state, action) => {
                 const { oldName, newName } = action.meta.arg
-                const { editLine, links } = state
-                if (editLine !== null && links[editLine].name === oldName) {
-                    links[editLine].name = newName
+                const { editLine, links, linksFiltered } = state
+                if (editLine !== null && linksFiltered[editLine].name === oldName) {
+                    links[linksFiltered[editLine].index].name = newName
                     state.editLine = null
                     state.editType = null
                     state.editData = null
@@ -125,9 +130,9 @@ export const slice = createSlice({
             })
             .addCase(updateUrlAsync.fulfilled, (state, action) => {
                 const { name, url } = action.meta.arg
-                const { editLine, links } = state
-                if (editLine !== null && links[editLine].name === name) {
-                    links[editLine].url = url
+                const { editLine, links, linksFiltered } = state
+                if (editLine !== null && linksFiltered[editLine].name === name) {
+                    links[linksFiltered[editLine].index].url = url
                     state.editLine = null
                     state.editType = null
                     state.editData = null
