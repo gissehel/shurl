@@ -10,3 +10,5 @@ export const selectPages = (state) => state.links.pages
 
 export const selectNewName = (state) => state.links.newName
 export const selectNewUrl = (state) => state.links.newUrl
+export const selectSearchValue = (state) => state.links.searchValue
+export const selectSearchLoading = (state) => state.links.searchLoading

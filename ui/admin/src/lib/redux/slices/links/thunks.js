@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { slice } from './slice'
 import { get_all_urls, update_name, update_url, add_url, delete_url } from './api'
+import { delay } from './api/tools'
 
 export const loadUrlsAsync = createAsyncThunk('links/loadUrlsAsync', async () => {
     return  await get_all_urls()
@@ -24,4 +25,9 @@ export const addNewLinkAsync = createAsyncThunk('links/addNewLinkAsync', async (
 
 export const removeLinkAsync = createAsyncThunk('links/removeLinkAsync', async ({ name }) => {
     return await delete_url(name)
+})
+
+export const changeSearch = createAsyncThunk('links/changeSearch', async ({ search }) => {
+    await delay(1000)
+    return { search }
 })

@@ -5,6 +5,7 @@ import { Button, Dimmer, Loader, Pagination } from 'semantic-ui-react'
 import NewLink from '@/app/components/NewLink'
 import style from './ExistingLinks.module.css'
 import { useEffect } from 'react'
+import SearchBar from '../SearchBar'
 
 const DataCell = ({ link, onClick, currentPage, index, isEditable, value, editData, onEditChanged, onEditValidated }) => {
     return <TableCell onClick={() => isEditable || onClick(currentPage, index)} className={style.ExistingLinksCell}>
@@ -73,6 +74,11 @@ const Component = ({
                     </TableRow>
                 </TableHeader>
                 <TableBody>
+                    <TableRow>
+                        <TableCell colSpan='3'>
+                            <SearchBar />
+                        </TableCell>
+                    </TableRow>
                     {
                         links.map((link, index) => {
                             return <TableRow key={index}>

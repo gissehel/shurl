@@ -1,9 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { loadUrlsAsync, updateNameAsync, updateUrlAsync, addNewLinkAsync, removeLinkAsync } from './thunks'
+import { loadUrlsAsync, updateNameAsync, updateUrlAsync, addNewLinkAsync, removeLinkAsync, changeSearch } from './thunks'
 
 const initialState = {
     urlLoadStatus: 'idle',
     links: [],
+    linksFiltered: [],
     linksView: [],
     urlsLoading: false,
     urlsLoaded: false,
@@ -16,20 +17,27 @@ const initialState = {
     newName: '',
     newUrl: '',
     newLinkWaiting: {},
-
+    searchValue: '',
+    searchLoading: false,
+    searchRequestId: null,
 }
 
 const getLinksView = (state) => {
     const { links, editLine, editType } = state
     const { currentPage, pageSize } = state
     const start = currentPage * pageSize
-    const linksView = links.slice(start, start + pageSize).map((link, index) => {
+    let linksFiltered = links
+    for (const filter of state.searchValue.toLowerCase().split(' ').filter((value) => value !== '')) {
+        linksFiltered = linksFiltered.filter((link) => link.name.toLowerCase().includes(filter) || link.url.toLowerCase().includes(filter))
+    }
+    const linksView = linksFiltered.slice(start, start + pageSize).map((link, index) => {
         if (index + start === editLine) {
             return { ...link, ...(editType === 'name' ? { nameEditable: true } : { urlEditable: true }) }
         }
         return link
     })
-    state.pageCount = Math.ceil(links.length / pageSize)
+    state.pageCount = Math.ceil(linksFiltered.length / pageSize)
+    state.linksFiltered = linksFiltered
     state.linksView = linksView
 }
 
@@ -111,7 +119,7 @@ export const slice = createSlice({
                 state.editData = null
                 getLinksView(state)
             })
-            
+
         builder
             .addCase(updateUrlAsync.pending, (state, action) => {
             })
@@ -132,11 +140,11 @@ export const slice = createSlice({
                 state.editData = null
                 getLinksView(state)
             })
-            
+
         builder
             .addCase(addNewLinkAsync.pending, (state, action) => {
                 const { name, url } = action.meta.arg
-                state.newLinkWaiting[name] = {name, url}
+                state.newLinkWaiting[name] = { name, url }
                 state.newName = ''
                 state.newUrl = ''
             })
@@ -165,6 +173,27 @@ export const slice = createSlice({
                 }
             })
             .addCase(removeLinkAsync.rejected, (state, action) => {
+            })
+        builder
+            .addCase(changeSearch.pending, (state, action) => {
+                const { search, requestId } = action.meta.arg
+                state.searchLoading = true
+                state.searchValue = search
+                state.searchRequestId = requestId
+            })
+            .addCase(changeSearch.fulfilled, (state, action) => {
+                const { requestId } = action.meta.arg
+                if (state.searchRequestId == requestId) {
+                    state.searchLoading = false
+                    getLinksView(state)
+                }
+            })
+            .addCase(changeSearch.rejected, (state, action) => {
+                const { requestId } = action.meta.arg
+                if (state.searchRequestId == requestId) {
+                    state.searchLoading = false
+                    getLinksView(state)
+                }
             })
     },
 })
