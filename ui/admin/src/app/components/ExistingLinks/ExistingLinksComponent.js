@@ -75,7 +75,7 @@ const Component = ({
                 </TableHeader>
                 <TableBody>
                     <TableRow>
-                        <TableCell colSpan='3'>
+                        <TableCell colSpan='4'>
                             <SearchBar />
                         </TableCell>
                     </TableRow>
@@ -98,7 +98,7 @@ const Component = ({
                 </TableBody>
                 <TableFooter>
                     <TableRow >
-                        <TableHeaderCell colSpan='3'>
+                        <TableHeaderCell colSpan='4'>
                             <Pagination
                                 activePage={currentPage + 1}
                                 totalPages={pageCount}
